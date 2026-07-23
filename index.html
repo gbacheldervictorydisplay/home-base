@@ -215,21 +215,24 @@
     flex: none;
   }
   .icon-btn:hover { color: var(--danger); background: var(--page); }
-  .order-btn {
-    font: inherit;
-    font-size: 13px;
+  .drag-handle {
+    font-size: 15px;
     line-height: 1;
     color: var(--muted);
-    background: none;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 5px;
-    cursor: pointer;
+    padding: 4px 6px;
+    cursor: grab;
     flex: none;
+    user-select: none;
+    touch-action: none;
   }
-  .order-btn:hover { color: var(--accent-strong); background: var(--page); }
-  .order-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .order-btn:disabled:hover { color: var(--muted); }
+  .drag-handle:hover { color: var(--accent-strong); }
+  ul.todos li.dragging { opacity: 0.45; }
+  .drag-handle:active { cursor: grabbing; }
+  ul.todos li.drop-above { box-shadow: inset 0 2px 0 0 var(--accent-strong); }
+  ul.todos li.drop-below { box-shadow: inset 0 -2px 0 0 var(--accent-strong); }
+  @media (prefers-reduced-motion: reduce) {
+    ul.todos li { transition: none; }
+  }
   .empty { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; font-style: italic; }
   .todo-meta { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
   .todo-meta button {
@@ -394,11 +397,7 @@ const DEFAULTS = {
   focusDate: "",
   notes: "",
   todos: [],
-  links: [
-    { name: "My GitHub repository", url: "https://github.com/gbacheldervictorydisplay/Main" },
-    { name: "Available Assets dashboard", url: "https://claude.ai/code/artifact/5f879ab3-d493-4b58-860e-2ddd49614abc" },
-    { name: "Claude Code", url: "https://claude.ai/code" }
-  ]
+  links: []
 };
 
 let db;
@@ -406,6 +405,19 @@ try { db = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS_KEY) |
 catch (e) { db = Object.assign({}, DEFAULTS); }
 function save() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(db)); } catch (e) { }
+}
+
+// One-time cleanup: drop the original default Quick Links from any browser
+// that cached them before they were removed. Runs once, preserves everything else.
+if (!db.removedDefaultLinks) {
+  var OLD_DEFAULT_LINKS = [
+    "https://github.com/gbacheldervictorydisplay/Main",
+    "https://claude.ai/code/artifact/5f879ab3-d493-4b58-860e-2ddd49614abc",
+    "https://claude.ai/code"
+  ];
+  db.links = (db.links || []).filter(function (l) { return OLD_DEFAULT_LINKS.indexOf(l.url) === -1; });
+  db.removedDefaultLinks = true;
+  save();
 }
 
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -432,6 +444,7 @@ focusEl.addEventListener("input", () => {
 const todoList = document.getElementById("todo-list");
 const todoEmpty = document.getElementById("todo-empty");
 const todoMeta = document.getElementById("todo-meta");
+let dragFrom = null;
 
 function renderTodos() {
   todoList.textContent = "";
@@ -448,24 +461,39 @@ function renderTodos() {
     span.className = "t-text";
     span.textContent = t.text;
 
-    const upBtn = document.createElement("button");
-    upBtn.className = "order-btn";
-    upBtn.type = "button";
-    upBtn.textContent = "↑";
-    upBtn.disabled = i === 0;
-    upBtn.setAttribute("aria-label", "Move up: " + t.text);
-    upBtn.addEventListener("click", () => {
-      if (i > 0) { [db.todos[i], db.todos[i - 1]] = [db.todos[i - 1], db.todos[i]]; save(); renderTodos(); }
-    });
+    const grip = document.createElement("span");
+    grip.className = "drag-handle";
+    grip.textContent = "⠿";
+    grip.setAttribute("aria-hidden", "true");
+    grip.title = "Drag to reorder";
 
-    const downBtn = document.createElement("button");
-    downBtn.className = "order-btn";
-    downBtn.type = "button";
-    downBtn.textContent = "↓";
-    downBtn.disabled = i === db.todos.length - 1;
-    downBtn.setAttribute("aria-label", "Move down: " + t.text);
-    downBtn.addEventListener("click", () => {
-      if (i < db.todos.length - 1) { [db.todos[i], db.todos[i + 1]] = [db.todos[i + 1], db.todos[i]]; save(); renderTodos(); }
+    li.draggable = true;
+    li.addEventListener("dragstart", e => {
+      dragFrom = i;
+      li.classList.add("dragging");
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        try { e.dataTransfer.setData("text/plain", String(i)); } catch (_) {}
+      }
+    });
+    li.addEventListener("dragend", () => { dragFrom = null; renderTodos(); });
+    li.addEventListener("dragover", e => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      if (dragFrom === null || dragFrom === i) return;
+      li.classList.remove("drop-above", "drop-below");
+      li.classList.add(i < dragFrom ? "drop-above" : "drop-below");
+    });
+    li.addEventListener("dragleave", () => { li.classList.remove("drop-above", "drop-below"); });
+    li.addEventListener("drop", e => {
+      e.preventDefault();
+      li.classList.remove("drop-above", "drop-below");
+      if (dragFrom === null || dragFrom === i) return;
+      const moved = db.todos.splice(dragFrom, 1)[0];
+      const target = i > dragFrom ? i - 1 : i;
+      db.todos.splice(target, 0, moved);
+      dragFrom = null;
+      save(); renderTodos();
     });
 
     const del = document.createElement("button");
@@ -474,7 +502,7 @@ function renderTodos() {
     del.textContent = "✕";
     del.setAttribute("aria-label", "Delete task: " + t.text);
     del.addEventListener("click", () => { db.todos.splice(i, 1); save(); renderTodos(); });
-    li.appendChild(cb); li.appendChild(span); li.appendChild(upBtn); li.appendChild(downBtn); li.appendChild(del);
+    li.appendChild(grip); li.appendChild(cb); li.appendChild(span); li.appendChild(del);
     todoList.appendChild(li);
   });
   const doneN = db.todos.filter(t => t.done).length;
