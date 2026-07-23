@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Base</title>
+<style>
+  :root {
+    --page: #f5f4ef;
+    --surface: #fdfcf8;
+    --ink: #21201b;
+    --ink-2: #605d52;
+    --muted: #8f8b7d;
+    --line: #e4e2d8;
+    --border: rgba(33, 32, 27, 0.10);
+    --accent: #33685021;
+    --accent-strong: #2e6a4e;
+    --accent-ink: #275a43;
+    --warm: #b97a1f;
+    --done: #8f8b7d;
+    --danger: #b3402e;
+    --focus-ring: #2e6a4e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #131512;
+      --surface: #1c1f1b;
+      --ink: #f0efe7;
+      --ink-2: #b8b5a6;
+      --muted: #83816f;
+      --line: #2d312c;
+      --border: rgba(240, 239, 231, 0.10);
+      --accent: #4d8f6e2b;
+      --accent-strong: #5aa079;
+      --accent-ink: #7dbb97;
+      --warm: #d9a04b;
+      --done: #83816f;
+      --danger: #e07a63;
+      --focus-ring: #5aa079;
+    }
+  }
+  :root[data-theme="light"] {
+    --page: #f5f4ef;
+    --surface: #fdfcf8;
+    --ink: #21201b;
+    --ink-2: #605d52;
+    --muted: #8f8b7d;
+    --line: #e4e2d8;
+    --border: rgba(33, 32, 27, 0.10);
+    --accent: #33685021;
+    --accent-strong: #2e6a4e;
+    --accent-ink: #275a43;
+    --warm: #b97a1f;
+    --done: #8f8b7d;
+    --danger: #b3402e;
+    --focus-ring: #2e6a4e;
+  }
+  :root[data-theme="dark"] {
+    --page: #131512;
+    --surface: #1c1f1b;
+    --ink: #f0efe7;
+    --ink-2: #b8b5a6;
+    --muted: #83816f;
+    --line: #2d312c;
+    --border: rgba(240, 239, 231, 0.10);
+    --accent: #4d8f6e2b;
+    --accent-strong: #5aa079;
+    --accent-ink: #7dbb97;
+    --warm: #d9a04b;
+    --done: #83816f;
+    --danger: #e07a63;
+    --focus-ring: #5aa079;
+  }
+
+  html { background: var(--page); }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 22px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .topline .clock {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card h2 {
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+  .col { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+
+  .focus-card { background: var(--accent); border-color: transparent; }
+  .focus-card h2 { color: var(--accent-ink); }
+  .focus-input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 22px;
+    color: var(--ink);
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .focus-input::placeholder { color: var(--muted); font-style: italic; }
+  .focus-input:focus { outline: none; }
+  .focus-card:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+  .wx-work-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .wx-work-top { display: flex; align-items: baseline; gap: 12px; }
+  .wx-work-temp { font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
+  .wx-work-feels { font-size: 13px; color: var(--ink-2); }
+  .wx-today-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-ink);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+  .wx-today-link:hover { border-color: var(--accent-strong); background: var(--page); }
+
+  .todo-form { display: flex; gap: 8px; margin-bottom: 4px; }
+  .todo-form input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .todo-form input::placeholder { color: var(--muted); }
+  button.primary {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent-strong);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  button.primary:hover { filter: brightness(1.08); }
+  ul.todos { list-style: none; margin: 6px 0 0; padding: 0; }
+  ul.todos li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 2px;
+    border-top: 1px solid var(--line);
+  }
+  ul.todos li:first-child { border-top: none; }
+  ul.todos input[type="checkbox"] {
+    width: 17px; height: 17px;
+    accent-color: var(--accent-strong);
+    cursor: pointer;
+    flex: none;
+  }
+  ul.todos .t-text { flex: 1; font-size: 14.5px; overflow-wrap: anywhere; }
+  ul.todos li.done .t-text { color: var(--done); text-decoration: line-through; }
+  .icon-btn {
+    font: inherit;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 7px;
+    cursor: pointer;
+    flex: none;
+  }
+  .icon-btn:hover { color: var(--danger); background: var(--page); }
+  .order-btn {
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 5px;
+    cursor: pointer;
+    flex: none;
+  }
+  .order-btn:hover { color: var(--accent-strong); background: var(--page); }
+  .order-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .order-btn:disabled:hover { color: var(--muted); }
+  .empty { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; font-style: italic; }
+  .todo-meta { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+  .todo-meta button {
+    font: inherit; font-size: 12px;
+    color: var(--muted); background: none; border: none;
+    text-decoration: underline; cursor: pointer; padding: 0;
+  }
+  .todo-meta button:hover { color: var(--danger); }
+
+  ul.links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  ul.links li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--line);
+  }
+  ul.links li:first-child { border-top: none; }
+  ul.links a {
+    flex: 1;
+    min-width: 0;
+    display: block;
+    padding: 10px 2px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  ul.links a:hover { color: var(--accent-strong); text-decoration: underline; }
+  ul.links .l-url {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+
+  .add-row { padding: 4px 2px; }
+  button.ghost {
+    font: inherit;
+    font-size: 14px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  button.ghost:hover { color: var(--accent-strong); }
+  .link-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    display: none;
+  }
+  .link-form.open { display: flex; }
+  .link-form input {
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .link-form input::placeholder { color: var(--muted); }
+  .link-form > div { display: flex; gap: 8px; }
+
+  .notes-card { display: flex; flex-direction: column; }
+  .notes-area {
+    flex: 1;
+    min-height: 120px;
+    min-width: 0;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    resize: vertical;
+  }
+  .notes-area::placeholder { color: var(--muted); }
+  .notes-area:focus { outline: none; border-color: var(--focus-ring); }
+  .save-state {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 6px 0 0;
+    height: 1.4em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="topline">
+      <span id="today"></span>
+      <span class="clock" id="clock"></span>
+    </div>
+  </header>
+
+  <div class="card focus-card">
+    <h2>Today's focus</h2>
+    <input class="focus-input" id="focus" placeholder="What matters most today?" maxlength="140" autocomplete="off">
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="card">
+        <div class="wx-work-row">
+          <div class="wx-work-top" id="wx-work-top">
+            <span class="wx-work-temp" id="wx-temp">…</span>
+            <span class="wx-work-feels" id="wx-feels"></span>
+          </div>
+          <a class="wx-today-link" href="https://weather.com/us/california/compton/postcode/90221/today" target="_blank" rel="noopener noreferrer">Weather at work ↗</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>To-do</h2>
+        <form class="todo-form" id="todo-form">
+          <input id="todo-input" placeholder="Add a task and press Enter" maxlength="200" autocomplete="off" aria-label="New task">
+          <button class="primary" type="submit">Add</button>
+        </form>
+        <ul class="todos" id="todo-list"></ul>
+        <p class="empty" id="todo-empty">Nothing yet — add your first task above.</p>
+        <p class="todo-meta" id="todo-meta"></p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2>Quick links</h2>
+        <ul class="links" id="link-list"></ul>
+        <div class="add-row">
+          <button class="ghost" id="link-toggle" type="button">+ Add link</button>
+        </div>
+        <form class="link-form" id="link-form">
+          <input id="link-name" placeholder="Name (e.g. Weather)" maxlength="60" autocomplete="off" aria-label="Link name">
+          <input id="link-url" placeholder="https://…" maxlength="500" autocomplete="off" inputmode="url" aria-label="Link URL">
+          <div><button class="primary" type="submit">Save link</button></div>
+        </form>
+      </div>
+
+      <div class="card notes-card">
+        <h2>Notes</h2>
+        <textarea class="notes-area" id="notes" placeholder="Jot anything here — it saves as you type." aria-label="Notes"></textarea>
+        <p class="save-state" id="save-state"></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+const LS_KEY = "homebase-v1";
+
+const DEFAULTS = {
+  name: "friend",
+  focus: "",
+  focusDate: "",
+  notes: "",
+  todos: [],
+  links: [
+    { name: "My GitHub repository", url: "https://github.com/gbacheldervictorydisplay/Main" },
+    { name: "Available Assets dashboard", url: "https://claude.ai/code/artifact/5f879ab3-d493-4b58-860e-2ddd49614abc" },
+    { name: "Claude Code", url: "https://claude.ai/code" }
+  ]
+};
+
+let db;
+try { db = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS_KEY) || "{}")); }
+catch (e) { db = Object.assign({}, DEFAULTS); }
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(db)); } catch (e) { }
+}
+
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function tick() {
+  const n = new Date();
+  document.getElementById("today").textContent =
+    DAYS[n.getDay()] + ", " + MONTHS[n.getMonth()] + " " + n.getDate() + ", " + n.getFullYear();
+  let h = n.getHours() % 12; if (h === 0) h = 12;
+  const m = String(n.getMinutes()).padStart(2, "0");
+  document.getElementById("clock").textContent = h + ":" + m + (n.getHours() < 12 ? " AM" : " PM");
+}
+tick();
+setInterval(tick, 15000);
+
+const focusEl = document.getElementById("focus");
+const todayKey = new Date().toDateString();
+if (db.focusDate !== todayKey) { db.focus = ""; db.focusDate = todayKey; save(); }
+focusEl.value = db.focus;
+focusEl.addEventListener("input", () => {
+  db.focus = focusEl.value; db.focusDate = todayKey; save();
+});
+
+const todoList = document.getElementById("todo-list");
+const todoEmpty = document.getElementById("todo-empty");
+const todoMeta = document.getElementById("todo-meta");
+
+function renderTodos() {
+  todoList.textContent = "";
+  todoEmpty.style.display = db.todos.length ? "none" : "block";
+  db.todos.forEach((t, i) => {
+    const li = document.createElement("li");
+    if (t.done) li.className = "done";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = t.done;
+    cb.setAttribute("aria-label", "Mark done: " + t.text);
+    cb.addEventListener("change", () => { t.done = cb.checked; save(); renderTodos(); });
+    const span = document.createElement("span");
+    span.className = "t-text";
+    span.textContent = t.text;
+
+    const upBtn = document.createElement("button");
+    upBtn.className = "order-btn";
+    upBtn.type = "button";
+    upBtn.textContent = "↑";
+    upBtn.disabled = i === 0;
+    upBtn.setAttribute("aria-label", "Move up: " + t.text);
+    upBtn.addEventListener("click", () => {
+      if (i > 0) { [db.todos[i], db.todos[i - 1]] = [db.todos[i - 1], db.todos[i]]; save(); renderTodos(); }
+    });
+
+    const downBtn = document.createElement("button");
+    downBtn.className = "order-btn";
+    downBtn.type = "button";
+    downBtn.textContent = "↓";
+    downBtn.disabled = i === db.todos.length - 1;
+    downBtn.setAttribute("aria-label", "Move down: " + t.text);
+    downBtn.addEventListener("click", () => {
+      if (i < db.todos.length - 1) { [db.todos[i], db.todos[i + 1]] = [db.todos[i + 1], db.todos[i]]; save(); renderTodos(); }
+    });
+
+    const del = document.createElement("button");
+    del.className = "icon-btn";
+    del.type = "button";
+    del.textContent = "✕";
+    del.setAttribute("aria-label", "Delete task: " + t.text);
+    del.addEventListener("click", () => { db.todos.splice(i, 1); save(); renderTodos(); });
+    li.appendChild(cb); li.appendChild(span); li.appendChild(upBtn); li.appendChild(downBtn); li.appendChild(del);
+    todoList.appendChild(li);
+  });
+  const doneN = db.todos.filter(t => t.done).length;
+  todoMeta.textContent = "";
+  if (db.todos.length) {
+    todoMeta.appendChild(document.createTextNode(doneN + " of " + db.todos.length + " done"));
+    if (doneN) {
+      todoMeta.appendChild(document.createTextNode(" · "));
+      const clr = document.createElement("button");
+      clr.type = "button";
+      clr.textContent = "clear completed";
+      clr.addEventListener("click", () => { db.todos = db.todos.filter(t => !t.done); save(); renderTodos(); });
+      todoMeta.appendChild(clr);
+    }
+  }
+}
+document.getElementById("todo-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const inp = document.getElementById("todo-input");
+  const v = inp.value.trim();
+  if (!v) return;
+  db.todos.push({ text: v, done: false });
+  inp.value = "";
+  save(); renderTodos();
+});
+renderTodos();
+
+const linkList = document.getElementById("link-list");
+function renderLinks() {
+  linkList.textContent = "";
+  db.links.forEach((l, i) => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = l.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.appendChild(document.createTextNode(l.name));
+    const u = document.createElement("span");
+    u.className = "l-url";
+    u.textContent = l.url.replace(/^https?:\/\//, "");
+    a.appendChild(u);
+    const del = document.createElement("button");
+    del.className = "icon-btn";
+    del.type = "button";
+    del.textContent = "✕";
+    del.setAttribute("aria-label", "Remove link: " + l.name);
+    del.addEventListener("click", () => { db.links.splice(i, 1); save(); renderLinks(); });
+    li.appendChild(a); li.appendChild(del);
+    linkList.appendChild(li);
+  });
+}
+document.getElementById("link-toggle").addEventListener("click", () => {
+  document.getElementById("link-form").classList.toggle("open");
+  document.getElementById("link-name").focus();
+});
+document.getElementById("link-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = document.getElementById("link-name").value.trim();
+  let url = document.getElementById("link-url").value.trim();
+  if (!name || !url) return;
+  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+  try { new URL(url); } catch (err) { return; }
+  db.links.push({ name, url });
+  document.getElementById("link-name").value = "";
+  document.getElementById("link-url").value = "";
+  document.getElementById("link-form").classList.remove("open");
+  save(); renderLinks();
+});
+renderLinks();
+
+const notesEl = document.getElementById("notes");
+const saveState = document.getElementById("save-state");
+notesEl.value = db.notes;
+let saveTimer = null;
+notesEl.addEventListener("input", () => {
+  db.notes = notesEl.value;
+  save();
+  saveState.textContent = "Saved";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { saveState.textContent = ""; }, 1500);
+});
+
+(function () {
+  const row = document.getElementById("wx-work-top");
+  const tempEl = document.getElementById("wx-temp");
+  const feelsEl = document.getElementById("wx-feels");
+  if (!row || !tempEl) return;
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=33.8467&longitude=-118.1970" +
+    "&current=temperature_2m,apparent_temperature&temperature_unit=fahrenheit" +
+    "&timezone=America%2FLos_Angeles";
+  function hide() { row.style.display = "none"; }
+  fetch(url)
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(d => {
+      const c = d.current || {};
+      if (typeof c.temperature_2m === "number") {
+        tempEl.textContent = Math.round(c.temperature_2m) + "°F";
+      } else { hide(); return; }
+      if (typeof c.apparent_temperature === "number") {
+        feelsEl.textContent = "Feels like " + Math.round(c.apparent_temperature) + "°";
+      }
+    })
+    .catch(hide);
+})();
+
+</script>
+
+</body>
+</html>
